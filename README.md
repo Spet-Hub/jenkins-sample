@@ -131,22 +131,65 @@ Run on a custom port:
 docker run --rm -e PORT=8080 -p 8080:8080 jenkins-sample-java
 ```
 
+## Jenkins Pipeline
+
+The repository now includes a sample `Jenkinsfile` for a straightforward CI/CD flow:
+
+1. Check out the repository
+2. Resolve the image name and tag
+3. Compile the Java app into `out/`
+4. Smoke test the local HTTP server
+5. Build a Docker image
+6. Optionally push the image
+7. Optionally deploy to Kubernetes
+
+Important assumptions for the Jenkins agent:
+
+- JDK 17 is installed
+- Docker is available
+- `curl` is available for the smoke test
+- `kubectl` is available when deployment is enabled
+
+The pipeline exposes these parameters:
+
+- `DEPLOY_ENV`: `none`, `dev`, `qa`, or `prod`
+- `IMAGE_REPOSITORY`: Docker repository to tag
+- `IMAGE_TAG`: optional explicit image tag
+- `BRANCH_NAME_OVERRIDE`: optional deployment metadata override
+- `PUSH_IMAGE`: whether to push the image after build
+
 ## Kubernetes And Jenkins Files
 
-Files such as `k8s.yaml`, `k8s-dev.yaml`, `k8s-prod.yaml`, and the related shell scripts are historical pipeline templates. They still show the intended deployment shape, but they are not production-ready as-is.
+The main Kubernetes files now match the current Java app, but they are still example deployment templates rather than production-ready manifests.
 
 Keep in mind:
 
-- Image names and namespace values are still placeholders or old demo values
-- Tokens such as `<BUILD_TAG>` and `<BRANCH_NAME>` are expected to be replaced by a pipeline
+- The primary manifests are now `k8s.yaml`, `k8s-dev.yaml`, `k8s-qa.yaml`, and `k8s-prod.yaml`
+- The placeholder values `__IMAGE__` and `__BRANCH__` are replaced by `k8s-deploy.sh` or by the Jenkins pipeline
+- The environment namespaces used by the refreshed manifests are `development`, `qatest`, and `production`
+- The `*-harbor.yaml` and `*-xuegod.yaml` files are older variants kept for reference
 - If you want to use these files for a real deployment, adjust image registry, namespaces, rollout strategy, and environment-specific values first
+
+Deploy manually with the helper script:
+
+```sh
+./k8s-deploy.sh dev your-dockerhub-user/jenkins-sample-java:123 main
+./k8s-deploy.sh qa your-dockerhub-user/jenkins-sample-java:123 release
+./k8s-deploy.sh prod your-dockerhub-user/jenkins-sample-java:123 main
+```
+
+Rollback a deployment:
+
+```sh
+./k8s-rollback.sh prod
+```
 
 ## Suggested Next Steps
 
 - Add a `pom.xml` and convert the project to a standard Maven layout with managed builds
 - Add logging, health checks, and stricter static resource handling
-- Simplify the Kubernetes manifests into one coherent deployment set
-- Add a `Jenkinsfile` for a complete CI/CD example
+- Simplify the Kubernetes manifests into one final deployment set and remove the older variants
+- Add image registry credentials handling to the Jenkins pipeline
 
 ## Current Use Cases
 

@@ -1,36 +1,58 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: jenkins-demo
+  name: jenkins-sample-java
   namespace: qatest
+  labels:
+    app: jenkins-sample-java
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: jenkins-demo 
+      app: jenkins-sample-java
   template:
     metadata:
       labels:
-        app: jenkins-demo
+        app: jenkins-sample-java
     spec:
       containers:
-      - image: whz/jenkins-demo:<BUILD_TAG>
-        imagePullPolicy: IfNotPresent
-        name: jenkins-demo
-        env:
-        - name: branch
-          value: <BRANCH_NAME>
+        - name: jenkins-sample-java
+          image: __IMAGE__
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 18888
+          env:
+            - name: PORT
+              value: "18888"
+            - name: APP_ENV
+              value: "qa"
+            - name: GIT_BRANCH
+              value: "__BRANCH__"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 18888
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 18888
+            initialDelaySeconds: 10
+            periodSeconds: 20
 ---
 apiVersion: v1
 kind: Service
 metadata:
-   name: demo
-   namespace: qatest
+  name: jenkins-sample-java
+  namespace: qatest
+  labels:
+    app: jenkins-sample-java
 spec:
-   selector:
-     app: jenkins-demo
-   type: NodePort
-   ports:
-   - port: 18888
-     targetPort: 18888
-     nodePort: 31891
+  selector:
+    app: jenkins-sample-java
+  type: NodePort
+  ports:
+    - port: 18888
+      targetPort: 18888
+      nodePort: 31891

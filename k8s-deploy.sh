@@ -1,58 +1,37 @@
 #!/bin/sh
-#生成部署k8s的 yaml 模板文件
-echo "生成部署k8s的 yaml 模板文件"
+set -eu
 
-cat > app_rollback_${2}.yaml <<EOF
+ENVIRONMENT="${1:-}"
+IMAGE="${2:-}"
+BRANCH_NAME="${3:-unknown}"
 
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  namespace: production
-  name: $project_name
-  labels:
-    app: $project_name
-spec:
-  replicas: $podNum
-  selector:
-    matchLabels:
-      app: $project_name
-  strategy:
-    rollingUpdate:  ##由于replicas为3,则整个升级,pod个数在2-4个之间
-      maxSurge: 1      #滚动升级时会先启动1个pod
-      maxUnavailable: 1 #滚动升级时允许的最大Unavailable的pod个数
-  template:
-    metadata:
-      labels:
-        app: $project_name
-    spec:
-      containers:
-      - name: $project_name
-        #发布时拉取最新版本的镜像
-        image: xianchao/jenkins-demo:<BUILD_TAG>
-        imagePullPolicy: IfNotPresent
+if [ -z "$ENVIRONMENT" ] || [ -z "$IMAGE" ]; then
+    echo "Usage: ./k8s-deploy.sh <dev|qa|prod|default> <image> [branch-name]" >&2
+    exit 1
+fi
 
----
-apiVersion: v1
-kind: Service
-metadata:
-  namespace: production
-  name: ${project_name}
-  labels:
-    app: ${project_name}
-spec:
-  ports:
-  - port: 18888
-    targetPort: 18888
-    nodePort: 31890
-    protocol: TCP
-  type: NodePort
-  selector:
-    app: ${project_name}
-    
-EOF
+case "$ENVIRONMENT" in
+    dev)
+        TEMPLATE="k8s-dev.yaml"
+        ;;
+    qa)
+        TEMPLATE="k8s-qa.yaml"
+        ;;
+    prod)
+        TEMPLATE="k8s-prod.yaml"
+        ;;
+    default)
+        TEMPLATE="k8s.yaml"
+        ;;
+    *)
+        echo "Unknown environment: $ENVIRONMENT" >&2
+        exit 1
+        ;;
+esac
 
+sed \
+    -e "s|__IMAGE__|$IMAGE|g" \
+    -e "s|__BRANCH__|$BRANCH_NAME|g" \
+    "$TEMPLATE" | kubectl apply -f -
 
-
-echo "生成部署k8s的 yaml 模板  完毕"
-echo "==================================================================="
-echo "  "
+echo "Applied $TEMPLATE using image $IMAGE"
