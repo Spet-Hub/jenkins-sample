@@ -1,21 +1,14 @@
 
-Get started with ${app}
+Pure Java quick start
 -----------------------------------
-Welcome to your new Go app!
+This project serves static content from `src/main/resources/static/` using the JDK HTTP server.
 
-Go description
+1. Use JDK 17 or newer.
+2. Start the application with:
 
-1. [Install the cf command-line tool](${doc-url}/#starters/BuildingWeb.html#install_cf).
-2. [Download the starter application package](${ace-url}/rest/apps/${app-guid}/starter-download).
-3. Extract the package and `cd` to it.
-4. Connect and log into Bluemix:
+		.\run.ps1
 
-		cf login -a ${api-url}
-
-5. Deploy your app:
-
-		cf push ${app}
-
-6. Access your app: [${route}](//${route})
+3. Open `http://localhost:18888/`.
+4. To change the port, set the `PORT` environment variable before launching the app.
 
 

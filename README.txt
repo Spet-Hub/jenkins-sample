@@ -1,32 +1,45 @@
 
-# Go Starter Application
+# Pure Java Static App
 
-Bluemix provides a Go starter application as a template so that you can add your code and push the changes back to the Bluemix environment.
+This repository is now organized as a plain Java 17 application with no Maven or Spring dependency.
 
+## Project layout
 
-## Files
+* `src/main/java/com/example/jenkinssample/`
 
-The Go starter application has files as below:
+  Java source code for the HTTP server and static resource handler.
 
-*   instructions.md
+* `src/main/resources/static/`
 
-	This file describes the Next Steps for getting started with this template.
+  Static HTML, CSS, and image assets served by the app.
 
-*   app.go
+* `run.ps1`
 
-	This file contains a simple web server written in the Go programming language.
+  PowerShell helper that compiles the project into `out/`, copies resources, and starts the server.
 
-*   static/
+* `run.sh`
 
-	This directory contains the static files that are part of this application.
+  Shell helper for Linux or macOS environments that performs the same compile and run steps.
 
-*   Procfile
+* `Dockerfile`
 
-	This file is required by the Go buildpack. It specifies the command to start the app.
+  Multi-stage image build for the Java version of the app.
 
-*   Godeps/
+## Run locally
 
-        This directory contains the app's dependencies and is created by the Godep tool.
+PowerShell:
 
+    .\run.ps1
 
+Shell:
+
+    sh ./run.sh
+
+Manual compile and run:
+
+    javac -d out (Get-ChildItem -Path .\src\main\java -Recurse -Filter *.java | ForEach-Object FullName)
+    Copy-Item -Path .\src\main\resources\* -Destination .\out -Recurse -Force
+    java -cp out com.example.jenkinssample.App
+
+The application listens on the `PORT` environment variable when present, otherwise it uses `18888`.
 

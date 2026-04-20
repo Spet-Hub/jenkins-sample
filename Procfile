@@ -1,3 +1,3 @@
 
-web: gohelloworld
+web: ./run.sh
 

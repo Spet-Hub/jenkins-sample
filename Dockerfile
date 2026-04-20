@@ -1,9 +1,19 @@
-FROM golang:1.10.4-alpine
+FROM eclipse-temurin:17-jdk-alpine AS build
 
-ADD . /go/src/app
+WORKDIR /app
 
-WORKDIR /go/src/app
+COPY src ./src
 
-RUN  go build -v -o /go/src/app/jenkins-app
+RUN mkdir -p out \
+    && javac -d out $(find src/main/java -name "*.java") \
+    && cp -R src/main/resources/. out/
 
-CMD ["./jenkins-app"]
+FROM eclipse-temurin:17-jre-alpine
+
+WORKDIR /app
+
+COPY --from=build /app/out ./out
+
+ENV PORT=18888
+
+CMD ["java", "-cp", "out", "com.example.jenkinssample.App"]
