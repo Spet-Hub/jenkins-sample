@@ -160,14 +160,13 @@ The pipeline exposes these parameters:
 
 ## Kubernetes And Jenkins Files
 
-The main Kubernetes files now match the current Java app, but they are still example deployment templates rather than production-ready manifests.
+The repository now keeps one primary Kubernetes manifest set for the current Java app: `k8s.yaml`, `k8s-dev.yaml`, `k8s-qa.yaml`, and `k8s-prod.yaml`.
 
 Keep in mind:
 
 - The primary manifests are now `k8s.yaml`, `k8s-dev.yaml`, `k8s-qa.yaml`, and `k8s-prod.yaml`
 - The placeholder values `__IMAGE__` and `__BRANCH__` are replaced by `k8s-deploy.sh` or by the Jenkins pipeline
 - The environment namespaces used by the refreshed manifests are `development`, `qatest`, and `production`
-- The `*-harbor.yaml` and `*-xuegod.yaml` files are older variants kept for reference
 - If you want to use these files for a real deployment, adjust image registry, namespaces, rollout strategy, and environment-specific values first
 
 Deploy manually with the helper script:
@@ -188,7 +187,6 @@ Rollback a deployment:
 
 - Add a `pom.xml` and convert the project to a standard Maven layout with managed builds
 - Add logging, health checks, and stricter static resource handling
-- Simplify the Kubernetes manifests into one final deployment set and remove the older variants
 - Add image registry credentials handling to the Jenkins pipeline
 
 ## Current Use Cases
